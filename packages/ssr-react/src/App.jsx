@@ -5,7 +5,7 @@ import pkg from "../package.json";
 import "./App.css";
 import { parseFile, ParseFileReRender } from "./parseFile";
 // const pages = import.meta.globEager('./pages/*.jsx')
-const datas = import.meta.globEager("../data/*.xlsx");
+const initDatas = import.meta.globEager("../../../data/*.xlsx");
 
 // const routes = Object.keys(pages).map((path) => {
 //   const name = path.match(/\.\/pages\/(.*)\.jsx$/)[1]
@@ -16,7 +16,7 @@ const datas = import.meta.globEager("../data/*.xlsx");
 //   }
 // })
 
-console.log(datas);
+console.log(initDatas);
 const isSSR = () => !globalThis?.window;
 let latestFiles = null;
 export function App() {
@@ -54,7 +54,11 @@ export function App() {
       <div> - </div>
       <button onClick={() => onLatestFilesUpdate(Math.random())}>解析文件</button>
       <ParseFileReRender latestFiles={latestFiles} random={rand} />
-      <div>版本说明： 0.5.4 增加导出时间、 0.5.3 数量微调</div>
+      <div>
+        版本说明：<br />
+        0.5.4 增加导出时间、<br />
+        0.5.3 数量位置微调<br />
+      </div>
       {/* <!-- 作者： snomiao <snomiao@gmail.com> --> */}
     </div>
   );
