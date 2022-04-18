@@ -15,10 +15,11 @@ import { parseFile, ParseFileReRender } from "./parseFile";
 //     component: pages[path].default
 //   }
 // })
-
+const APPTITLE = `乐汇购物广场订单汇总系统 v${pkg.version}`
 // console.log(initDatas);
 const isSSR = () => !globalThis?.window;
 let latestFiles = null;
+
 export function App() {
   const [rand, onLatestFilesUpdate] = useState(0);
   if (!isSSR()) {
@@ -39,27 +40,45 @@ export function App() {
         </Dropzone> */}
 
       <div>
-        <h1>乐汇超市订单汇总系统 v{pkg.version}</h1>
+        <h1 className="center">{APPTITLE}</h1>
       </div>
+      <main>
+        使用方法：
+        <ol>
+          <li> 拖拽 订单记录 表格 .xlsx 到下面方框这里进行分析 </li>
+          <li> 或者点击下面方框来选择文件 </li>
+        </ol>
+      </main>
+      <main>
+        <div id="wrapper">
+          <input hidden type="file" id="file" name="files[]" multiple accept=".xls,.xlsx,.csv" />
+          <div id="filebox">
+            <div className="circle"></div>
+            <div className="circle"></div>
+            {/* <img
+            width="400"
+            src="../media/demo.png"
+          /> */}
+          </div>
+          <br />
+          <ParseFileReRender latestFiles={latestFiles} random={rand} />
+          {/* <button onClick={() => onLatestFilesUpdate(Math.random())}>解析文件</button> */}
+        </div>
+      </main>
+      <main>
+        <div style={{
+          float: "right"
+        }}>
+          {"作者： snomiao"}<br />
+          {"微信：@snomiao"}<br />
 
-      <input hidden type="file" id="file" name="files[]" multiple accept=".xls,.xlsx,.csv" />
-      <div id="filebox">
-        {/* <img
-          width="400"
-          src="../media/demo.png"
-        /> */}
-        <div> 拖拽 订单记录 表格 .xlsx 到这里进行分析 </div>
-        <div> 或者点击这个方框来选择文件 </div>
-      </div>
-      <div> - </div>
-      <button onClick={() => onLatestFilesUpdate(Math.random())}>解析文件</button>
-      <ParseFileReRender latestFiles={latestFiles} random={rand} />
-      <div>
-        版本说明：<br />
-        0.5.4 增加导出时间、<br />
-        0.5.3 数量位置微调<br />
-      </div>
-      {/* <!-- 作者： snomiao <snomiao@gmail.com> --> */}
+          <br />
+          版本说明：<br />
+          0.5.5 界面优化、地址识别逻辑优化<br />
+          0.5.4 增加导出时间<br />
+          0.5.3 数量位置微调<br />
+        </div>
+      </main>
     </div>
   );
 }
@@ -68,6 +87,7 @@ function reparse() {
   [...file.files].map(parseFile);
 }
 function appInitEffect(onLatestFilesUpdate) {
+  document.title = APPTITLE
   const status = {};
   setTimeout(() => {
     // UI响应部分
@@ -107,8 +127,8 @@ function appInitEffect(onLatestFilesUpdate) {
     status.unload = () => {
       file.removeEventListener("change", onFileChange, false);
       box.removeEventListener("drop", onBoxDrop, false);
-      box.removeEventListener("click", onBoxClick);
-      box.removeEventListener("dragenter", onboxDragEnter);
+      box.removeEventListener("click", onBoxClick, false);
+      box.removeEventListener("dragenter", onboxDragEnter, false);
       document.removeEventListener("dragleave", ondragleave);
       document.removeEventListener("drop", ondrop);
       document.removeEventListener("dragenter", ondragenter);

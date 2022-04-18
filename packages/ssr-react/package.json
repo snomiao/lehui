@@ -1,11 +1,11 @@
 {
   "name": "ssr",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "private": true,
   "scripts": {
     "build": "npm run build:client && npm run build:server",
     "build-serve": "npm run build:client && npm run serve-dev",
-    "build:client": "vite build --outDir dist/client5",
+    "build:client": "vite build --outDir dist/client0,5.5",
     "build:server": "vite build --ssr src/entry-server.jsx --outDir dist/server",
     "check": "tsc --noEmit --watch",
     "debug": "node --inspect-brk server",
@@ -13,7 +13,7 @@
     "dev:ssr": "node --experimental-specifier-resolution=node --experimental-modules server",
     "generate": "vite build --outDir dist/static && npm run build:server && node prerender",
     "serve": "cross-env NODE_ENV=production node server",
-    "serve-dev": "serve dist/client5 -l tcp://0.0.0.0:65535"
+    "serve-dev": "serve dist/client0,5.5 -l tcp://0.0.0.0:65535"
   },
   "dependencies": {
     "@types/lodash-es": "^4.17.6",
