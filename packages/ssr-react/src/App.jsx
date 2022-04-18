@@ -5,7 +5,7 @@ import pkg from "../package.json";
 import "./App.css";
 import { parseFile, ParseFileReRender } from "./parseFile";
 // const pages = import.meta.globEager('./pages/*.jsx')
-const initDatas = import.meta.globEager("../../../data/*.xlsx");
+// const initDatas = import.meta.globEager("../../../data/*.xlsx");
 
 // const routes = Object.keys(pages).map((path) => {
 //   const name = path.match(/\.\/pages\/(.*)\.jsx$/)[1]
@@ -16,7 +16,7 @@ const initDatas = import.meta.globEager("../../../data/*.xlsx");
 //   }
 // })
 
-console.log(initDatas);
+// console.log(initDatas);
 const isSSR = () => !globalThis?.window;
 let latestFiles = null;
 export function App() {
