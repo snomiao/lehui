@@ -1,0 +1,25 @@
+* {
+  text-align: center;
+}
+h1 {
+  margin: 1em 0;
+}
+#filebox {
+  margin: auto;
+  max-width: 85%;
+  box-shadow: 0 0 1em black;
+  background-color: antiquewhite;
+  padding: 1em;
+}
+table {
+  width: 100%;
+  zoom: 0.8;
+}
+@media print {
+  h1 {
+    display: none;
+  }
+  #filebox {
+    display: none;
+  }
+}
