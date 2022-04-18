@@ -101,9 +101,13 @@ function appInitEffect(onLatestFilesUpdate) {
     };
     const onBoxDrop = (e) => {
       [...e.dataTransfer.files].map(parseFile);
+      latestFiles = [...e.dataTransfer.files];
+      onLatestFilesUpdate(Math.random());
     };
     const onBoxClick = (e) => {
       file.click();
+      latestFiles = [...file.files];
+      onLatestFilesUpdate(Math.random());
     };
     const onboxDragEnter = (e) => {
       box;
