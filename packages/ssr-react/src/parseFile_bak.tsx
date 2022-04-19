@@ -10,15 +10,9 @@ const s2ab = (s) => {
   for (let i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xff;
   return buf;
 };
-const 商品类型正则表: Record<string, RegExp | string> = {
-  肉: /瘦肉|肥肉/,
-  盒装肉: /[虾鸡猪鸭鱼].*?[盒袋]/,
-  蔬菜: /洋葱|菜/,
-  水果: /苹果|香蕉|梨|菠萝|果/,
-  饮料: /可乐|汽水|奶茶|水|汁/,
-  // 百货: /.*/,
-};
-const 小区地址正则表: Record<string, RegExp | string> = {
+
+const 小区地址正则表: any = {
+  绿地香颂: /海马路?5888/,
   海湾艺墅: /海马路?5699/,
   力泉医院: /海马路?5699/,
   旭辉圆石滩: /海马路?5111[弄号]1[弄号]/,
@@ -58,7 +52,6 @@ const 小区地址正则表: Record<string, RegExp | string> = {
   圆石滩: /(海湾旅游区)?海马路?5111/,
   健康花苑: /海浪路?39/,
   新港村: "新港村",
-  绿地香颂: /海马路?5888/,
   绿地香溢: /海兴路?1881弄?|(海湾旅游区)?5888弄/,
   上海应用技术大学: /应技大|上海应用技术大学|上应大|应用技术/,
   华东理工大学: /华东理工|华东理工大学|华理/,
@@ -99,6 +92,7 @@ const download = function (content, filename) {
 
 export function ParseFileReRender({ latestFiles }: any) {
   const [parseResults, setParseResults] = React.useState(null);
+
   React.useEffect(() => {
     Promise.all(latestFiles?.map(async (file) => await parseFile(file)) || []).then(
       setParseResults,
@@ -110,7 +104,6 @@ export function ParseFileReRender({ latestFiles }: any) {
   if (!parseResults?.length) return <>请导入要解析的文件.</>;
 
   console.log("parseResults", parseResults);
-  console.table(parseResults[0].slice(0, 20));
   return (
     <>
       <div>解析结果数： {parseResults.length} 个结果</div>
@@ -163,59 +156,51 @@ export function parseFile(file) {
             付款状态,
             订购时间,
             订单类型,
-            ["微信昵称/备注名"]: 微信昵称,
+            ["微信昵称/备注名"]: 微信昵称_备注名,
             顾客姓名,
             顾客电话,
             顾客地址,
             自提地址,
             自提时间,
-            ["订单金额（元）"]: 订单金额,
+            ["订单金额（元）"]: 订单金额_元,
             顾客备注,
           } = 订单行;
-          const { 商品, ["商品单价（元）"]: 商品单价, 购买数量 } = 订单行;
-          const 商品列 = [
-            {
-              类型: 商品类型解析(商品),
-              商品: 商品.replace("$", ""),
-              raw商品: 商品,
-              商品单价,
-              购买数量,
-            },
-          ];
-          if (!订单编号) {
+          const { 商品, ["商品单价（元）"]: 商品单价_元, 购买数量 } = 订单行;
+          const 商品列 = [{ 商品: 商品.replace("$", ""), 商品单价_元, 购买数量 }];
+          if (订单编号) {
+            const 订单详情 = {
+              识别小区: 地址小区解析(自提地址 + 顾客地址),
+              订单编号,
+              付款状态,
+              订购时间,
+              订单类型,
+              // 顾客信息: {
+              微信昵称_备注名,
+              顾客姓名,
+              顾客电话,
+              自提地址: 自提地址.replace(/上海市上海市/, "上海市"),
+              顾客地址: 顾客地址.replace(/上海市上海市/, "上海市"),
+              // },
+              自提时间,
+              商品列,
+              订单金额_元,
+              顾客备注,
+            };
+            订单表列.push(订单详情);
+            return 订单表列;
+          } else {
             const 最近订单 = 订单表列[订单表列.length - 1];
             最近订单.商品列.push(...商品列);
             return 订单表列;
           }
-          const 订单详情 = {
-            识别小区: 地址小区解析(自提地址 + 顾客地址),
-            订单编号,
-            付款状态,
-            订购时间,
-            订单类型,
-            // 顾客信息: {
-            微信昵称,
-            顾客姓名,
-            顾客电话,
-            自提地址: 自提地址.replace(/上海市上海市/, "上海市"),
-            顾客地址: 顾客地址.replace(/上海市上海市/, "上海市"),
-            手机尾号: 顾客电话.slice(-4),
-            // },
-            自提时间,
-            商品列,
-            订单金额: 订单金额 + "元",
-            顾客备注,
-          };
-          订单表列.push(订单详情);
-          return 订单表列;
         }, [])
-        .sort((a, b) => a.手机尾号.localeCompare(b.手机尾号))
+        .sort((a, b) => a.顾客地址.localeCompare(b.顾客地址))
         .sort((a, b) => a.识别小区.localeCompare(b.识别小区));
 
       // 导出订单表列.
       console.log(汇总表列);
       console.log(订单表列);
-      const 宽度 = 4;
+      const 宽度 = 6;
 
       const 订单XLSX列列 = 订单表列.flatMap(
         ({
@@ -224,92 +209,120 @@ export function parseFile(file) {
           付款状态,
           订购时间,
           订单类型,
-          // 顾客信息,
-          微信昵称,
+          顾客信息,
+          微信昵称_备注名,
           顾客姓名,
           顾客电话,
           自提地址,
           顾客地址,
           自提时间,
-          订单金额,
-          手机尾号,
+          订单金额_元,
           顾客备注,
           商品列,
         }) => {
-          // 自提地址 || 顾客地址
-          const 订单信息行列 = [
-            ["订单编号", 订单编号, "手机尾号", 手机尾号],
-            ["顾客地址", 顾客地址, "识别小区", 识别小区],
-            ["自提地址", 自提地址, "自提时间", 自提时间],
-            ["顾客姓名", 顾客姓名, "订购时间", 订购时间],
-            ["微信昵称", 微信昵称, "顾客电话", 顾客电话],
-            ["订单类型", 订单类型, "付款状态", 付款状态],
-            ["顾客备注", 顾客备注, "订单金额", 订单金额],
+          const 订单信息行1 = [
+            "地址",
+            自提地址 || 顾客地址,
+            "识别小区",
+            识别小区,
+            "自提时间",
+            自提时间,
+            "订单编号",
+            订单编号,
+            "付款状态",
+            付款状态,
           ];
-          const 商品头 = [["类型识别", "商品名称", "购买数量", "单价"]];
-          const 商品信息行 = 商品列
-            .sort((a, b) => a.raw商品.localeCompare(b.raw商品))
-            .sort((a, b) => a.类型.localeCompare(b.类型))
-            .flatMap(({ 类型, 商品, 商品单价, 购买数量 }) => [
-              类型,
-              商品,
-              购买数量,
-              商品单价 + "元",
-            ]);
+          const 订单信息行2 = [
+            "顾客地址",
+            顾客地址,
+            "顾客信息",
+            顾客信息,
+            "微信昵称_备注名",
+            微信昵称_备注名,
+            "顾客姓名",
+            顾客姓名,
+            "顾客电话",
+            顾客电话,
+          ];
+          const 订单信息行3 = [
+            "顾客备注",
+            顾客备注,
+            "订购时间",
+            订购时间,
+            "订单类型",
+            订单类型,
+            "订单金额_元",
+            订单金额_元,
+          ];
+          const 商品信息行 = 商品列.flatMap(({ 商品, 商品单价_元, 购买数量 }) => [
+            "商品",
+            商品,
+            // "",
+            // "",
 
-          const [date, time] = new Date(+new Date() + 8 * 3600e3)
-            .toISOString()
-            .replace("Z", "")
-            .split("T");
+            "数量",
+            购买数量,
+            "单价",
+            商品单价_元 + "元",
+
+            // "单价 * 数量",
+            // 商品单价_元 + "元 x " + 购买数量,
+          ]);
+          
           const 返回多信息行 = [
             // 空
-            ...[undefined].reduce((多信息行, 信息, i) => {
+            ...[""].reduce((多信息行, 信息, i) => {
               const x = i % 宽度;
               const y = (i / 宽度) | 0;
               多信息行[y] = 多信息行[y] || Array(宽度).fill(undefined);
-              多信息行[y][x] = 多信息行[y][x] || 信息;
-              return 多信息行;
-            }, []),
-            // 横线
-            ...[undefined].reduce((多信息行, 信息, i) => {
-              const x = i % 宽度;
-              const y = (i / 宽度) | 0;
-              多信息行[y] = 多信息行[y] || Array(宽度).fill("---");
-              多信息行[y][x] = 多信息行[y][x] || 信息;
-              return 多信息行;
-            }, []),
-            // 空
-            ...[undefined].reduce((多信息行, 信息, i) => {
-              const x = i % 宽度;
-              const y = (i / 宽度) | 0;
-              多信息行[y] = 多信息行[y] || Array(宽度).fill(undefined);
-              多信息行[y][x] = 多信息行[y][x] || 信息;
-              return 多信息行;
-            }, []),
-            // 空
-            ...[
-              time.slice(0, 8),
-              `乐汇超市订单汇总系统 v${pkg.version} / 由 @snomiao 友情提供支持`,
-              "手机尾号",
-              "（小的放左边，大的放右边）",
-            ].reduce((多信息行, 信息, i) => {
-              const x = i % 宽度;
-              const y = (i / 宽度) | 0;
-              多信息行[y] = 多信息行[y] || Array(宽度).fill(null);
               多信息行[y][x] = 信息;
               return 多信息行;
             }, []),
-            ...订单信息行列,
-
             // 空
-            ...[undefined].reduce((多信息行, 信息, i) => {
+            ...[""].reduce((多信息行, 信息, i) => {
+              const x = i % 宽度;
+              const y = (i / 宽度) | 0;
+              多信息行[y] = 多信息行[y] || Array(宽度).fill("---");
+              多信息行[y][x] = 信息;
+              return 多信息行;
+            }, []),
+            // 空
+            ...[""].reduce((多信息行, 信息, i) => {
               const x = i % 宽度;
               const y = (i / 宽度) | 0;
               多信息行[y] = 多信息行[y] || Array(宽度).fill(undefined);
-              多信息行[y][x] = 多信息行[y][x] || 信息;
+              多信息行[y][x] = 信息;
               return 多信息行;
             }, []),
-            ...商品头,
+            //
+            ...订单信息行1.reduce((多信息行, 信息, i) => {
+              const x = i % 宽度;
+              const y = (i / 宽度) | 0;
+              多信息行[y] = 多信息行[y] || Array(宽度).fill(undefined);
+              多信息行[y][x] = 信息;
+              return 多信息行;
+            }, []),
+            ...订单信息行2.reduce((多信息行, 信息, i) => {
+              const x = i % 宽度;
+              const y = (i / 宽度) | 0;
+              多信息行[y] = 多信息行[y] || Array(宽度).fill(undefined);
+              多信息行[y][x] = 信息;
+              return 多信息行;
+            }, []),
+            ...订单信息行3.reduce((多信息行, 信息, i) => {
+              const x = i % 宽度;
+              const y = (i / 宽度) | 0;
+              多信息行[y] = 多信息行[y] || Array(宽度).fill(undefined);
+              多信息行[y][x] = 信息;
+              return 多信息行;
+            }, []),
+            // ...[""].reduce((多信息行, 信息, i) => {
+            //   const x = i % 宽度;
+            //   const y = (i / 宽度) | 0;
+            //   多信息行[y] = 多信息行[y] || Array(宽度).fill(undefined);
+            //   多信息行[y][x] = 信息;
+            //   return 多信息行;
+            // }, []),
             ...商品信息行.reduce((多信息行, 信息, i) => {
               const x = i % 宽度;
               const y = (i / 宽度) | 0;
@@ -322,16 +335,13 @@ export function parseFile(file) {
         },
       );
       const 导出订单XLSX列列 = [
-        ...["顾客订单表", `乐汇超市订单汇总系统 v${pkg.version} / 由 @snomiao 友情提供支持`].reduce(
-          (多信息行, 信息, i) => {
-            const x = i % 宽度;
-            const y = (i / 宽度) | 0;
-            多信息行[y] = 多信息行[y] || Array(宽度).fill(null);
-            多信息行[y][x] = 信息;
-            return 多信息行;
-          },
-          [],
-        ),
+        ...["顾客订单表", `乐汇超市订单汇总系统 v${pkg.version}`].reduce((多信息行, 信息, i) => {
+          const x = i % 宽度;
+          const y = (i / 宽度) | 0;
+          多信息行[y] = 多信息行[y] || Array(宽度).fill(null);
+          多信息行[y][x] = 信息;
+          return 多信息行;
+        }, []),
         ...["导出时间", 导出时间].reduce((多信息行, 信息, i) => {
           const x = i % 宽度;
           const y = (i / 宽度) | 0;
@@ -341,13 +351,24 @@ export function parseFile(file) {
         }, []),
         ...订单XLSX列列,
       ];
+      resolve(导出订单XLSX列列);
+      // console.log(订单XLSX表列);
 
+      // var json = xlsx.utils.sheet_to_json(工作表列表[工作表列表.length - 1]);
+      // console.log(json)
       globalThis.解析结果 = { 订单表列, 汇总表列 };
       globalThis.全部下载 = () => {
         表列XLSX下载("汇总表", 汇总表列);
         订单列列XLSX下载("顾客订单列", 导出订单XLSX列列);
+        // 表列XLSX下载(
+        //   "订单表",
+        //   订单表列.map(({ 商品列, ...e }) => {
+        //     yaml;
+        //     return { ...e, 商品列: yaml.stringify(商品列) };
+        //   })
+        // );
       };
-      resolve(导出订单XLSX列列);
+      // resolve(订单表列);
     };
   });
 }
@@ -363,31 +384,13 @@ function 表列XLSX下载(name: string, jsonArray: any) {
   download(wbout, name + ".xlsx");
 }
 
-function 订单列列XLSX下载(name: string, aoa: any[][]) {
-  const sheet = xlsx.utils.aoa_to_sheet(aoa);
-  // large font
-  aoa.map((row, r) =>
-    row.map((content, c) => {
-      if (!content?.match(/订单编号|手机尾号/)) return;
-      const cell = sheet[xlsx.utils.encode_cell({ r, c: c + 1 })];
-      cell.s = { font: { sz: 36 } };
-      console.log(cell, sheet[xlsx.utils.encode_cell({ r, c: c + 1 })]);
-      // // 单元格对齐方式
-      // alignment: {
-      //   /// 自动换行
-      //   wrapText: 1,
-      //   // 水平居中
-      //   horizontal: "center",
-      //   // 垂直居中
-      //   vertical: "center"
-      // }
-      // Object.assign(cell, {
-      //   s: { font: { sz: "36", bold: true } },
-      // });
-    }),
-  );
-  // fit column width
-  sheet["!cols"] = fitToColumn(aoa);
+function 订单列列XLSX下载(name: string, aoa: any) {
+  const s = xlsx.utils.aoa_to_sheet(aoa);
+  s["!cols"] = fitToColumn(aoa);
+  s["!merges"] = mergePhone(aoa);
+
+  // s["!merges"]
+
   function fitToColumn(arrayOfArray) {
     // get maximum character of each column
     return arrayOfArray[0].map((cell, i) => ({
@@ -395,10 +398,16 @@ function 订单列列XLSX下载(name: string, aoa: any[][]) {
     }));
   }
 
-  console.log("large font done");
-
+  function mergePhone(arrayOfArray) {
+    // get maximum character of each column
+    return arrayOfArray?.map((cell, i) => ({
+      wch: Math.max(...arrayOfArray.map((a2) => (a2[i] ? a2[i].toString().length * 2 : 0))),
+    }));
+  }
+  // {s: {font: {name: "SimHei", sz: "24", bold: true, vertAlign: true}}}
+  // s["!merges"]
   const Sheets = {
-    [name]: sheet,
+    [name]: s,
   };
   const workbook_out = {
     SheetNames: [...Object.keys(Sheets)],
@@ -406,11 +415,4 @@ function 订单列列XLSX下载(name: string, aoa: any[][]) {
   };
   const wbout = xlsx.write(workbook_out, { type: "binary" });
   download(wbout, name + ".xlsx");
-}
-function 商品类型解析(商品: string) {
-  return Object.entries(商品类型正则表)
-    .map(([类型, 模式]) => ({ 类型, 模式 }))
-    .filter((e) => 商品.match(e.类型) || (e.模式 && 商品.match(e.模式)))
-    .map((e) => e?.类型)
-    .join("/");
 }
