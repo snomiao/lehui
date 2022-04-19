@@ -290,8 +290,8 @@ export function parseFile(file) {
             ...[
               time.slice(0, 8),
               `乐汇超市订单汇总系统 v${pkg.version} / 由 @snomiao 友情提供支持`,
-              "手机尾号",
-              "（小的放左边，大的放右边）",
+              "尾号小的",
+              "放左边，大的放右边",
             ].reduce((多信息行, 信息, i) => {
               const x = i % 宽度;
               const y = (i / 宽度) | 0;
