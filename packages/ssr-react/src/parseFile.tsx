@@ -271,44 +271,19 @@ export function parseFile(file) {
               return 多信息行;
             }, []),
             // 横线
-            ...[undefined].reduce((多信息行, 信息, i) => {
-              const x = i % 宽度;
-              const y = (i / 宽度) | 0;
-              多信息行[y] = 多信息行[y] || Array(宽度).fill("---");
-              多信息行[y][x] = 多信息行[y][x] || 信息;
-              return 多信息行;
-            }, []),
+            ...[["@@@@@@@@", `乐汇超市订单汇总系统 v${pkg.version}`, "@@@@@@@@", "@@@@@@@@"]],
             // 空
-            ...[undefined].reduce((多信息行, 信息, i) => {
-              const x = i % 宽度;
-              const y = (i / 宽度) | 0;
-              多信息行[y] = 多信息行[y] || Array(宽度).fill(undefined);
-              多信息行[y][x] = 多信息行[y][x] || 信息;
-              return 多信息行;
-            }, []),
-            // 空
-            ...[
-              time.slice(0, 8),
-              `乐汇超市订单汇总系统 v${pkg.version} / 由 @snomiao 友情提供支持`,
-              "尾号小的",
-              "放左边，大的放右边",
-            ].reduce((多信息行, 信息, i) => {
-              const x = i % 宽度;
-              const y = (i / 宽度) | 0;
-              多信息行[y] = 多信息行[y] || Array(宽度).fill(null);
-              多信息行[y][x] = 信息;
-              return 多信息行;
-            }, []),
+            ...[time.slice(0, 8), "", "尾号小的", "放左边，大的放右边"].reduce(
+              (多信息行, 信息, i) => {
+                const x = i % 宽度;
+                const y = (i / 宽度) | 0;
+                多信息行[y] = 多信息行[y] || Array(宽度).fill(null);
+                多信息行[y][x] = 信息;
+                return 多信息行;
+              },
+              [],
+            ),
             ...订单信息行列,
-
-            // 空
-            ...[undefined].reduce((多信息行, 信息, i) => {
-              const x = i % 宽度;
-              const y = (i / 宽度) | 0;
-              多信息行[y] = 多信息行[y] || Array(宽度).fill(undefined);
-              多信息行[y][x] = 多信息行[y][x] || 信息;
-              return 多信息行;
-            }, []),
             ...商品头,
             ...商品信息行.reduce((多信息行, 信息, i) => {
               const x = i % 宽度;
@@ -322,16 +297,13 @@ export function parseFile(file) {
         },
       );
       const 导出订单XLSX列列 = [
-        ...["顾客订单表", `乐汇超市订单汇总系统 v${pkg.version} / 由 @snomiao 友情提供支持`].reduce(
-          (多信息行, 信息, i) => {
-            const x = i % 宽度;
-            const y = (i / 宽度) | 0;
-            多信息行[y] = 多信息行[y] || Array(宽度).fill(null);
-            多信息行[y][x] = 信息;
-            return 多信息行;
-          },
-          [],
-        ),
+        ...["顾客订单表", `乐汇超市订单汇总系统 v${pkg.version}`].reduce((多信息行, 信息, i) => {
+          const x = i % 宽度;
+          const y = (i / 宽度) | 0;
+          多信息行[y] = 多信息行[y] || Array(宽度).fill(null);
+          多信息行[y][x] = 信息;
+          return 多信息行;
+        }, []),
         ...["导出时间", 导出时间].reduce((多信息行, 信息, i) => {
           const x = i % 宽度;
           const y = (i / 宽度) | 0;
@@ -391,7 +363,17 @@ function 订单列列XLSX下载(name: string, aoa: any[][]) {
   function fitToColumn(arrayOfArray) {
     // get maximum character of each column
     return arrayOfArray[0].map((cell, i) => ({
-      wch: Math.max(...arrayOfArray.map((row) => (row[i] ? row[i].toString().length * 2 : 0))),
+      wch: Math.max(
+        ...arrayOfArray.map((row) =>
+          row[i]
+            ? row[i]
+                .toString()
+                .split("")
+                .map((e) => (e.charCodeAt(0) < 128 ? 1 : 2))
+                .reduce((a, b) => a + b)
+            : 0,
+        ),
+      ),
     }));
   }
 
