@@ -9,7 +9,8 @@
     "build": "lerna run build",
     "format": "prettier -w . && eslint --fix .",
     "lerna-publish": "lerna publish",
-    "test": "lerna run test"
+    "test": "lerna run test",
+    "postversion": "cp -r ./packages/ssr-react/media ./packages/ssr-react/*.md ./"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.19.0",

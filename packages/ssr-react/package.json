@@ -14,7 +14,7 @@
     "generate": "vite build --outDir dist/static && npm run build:server && node prerender",
     "serve": "cross-env NODE_ENV=production node server",
     "serve-dev": "serve dist/client0,6.0 -l tcp://0.0.0.0:65535",
-    "serve-stable": "serve dist/client0,6.0 -l tcp://0.0.0.0:65535"
+    "serve-stable": "serve dist/client0,6.0 -l tcp://0.0.0.0:65535",
   },
   "dependencies": {
     "@types/lodash-es": "^4.17.6",
