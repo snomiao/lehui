@@ -3,18 +3,18 @@
   "version": "0.6.2",
   "private": true,
   "scripts": {
-    "build": "npm run build:client && npm run build:server",
+    "build": "npm run build:client",
     "build-serve": "npm run build:client && npm run serve-dev",
-    "build:client": "vite build --outDir dist/client0,6.0",
+    "build:client": "vite build --outDir dist/client",
     "build:server": "vite build --ssr src/entry-server.jsx --outDir dist/server",
     "check": "tsc --noEmit --watch",
     "debug": "node --inspect-brk server",
     "dev": "vite --port 65533",
     "dev:ssr": "node --experimental-specifier-resolution=node --experimental-modules server",
+    "docs-build": "vite build --outDir ../../docs/",
     "generate": "vite build --outDir dist/static && npm run build:server && node prerender",
     "serve": "cross-env NODE_ENV=production node server",
-    "serve-dev": "serve dist/client0,6.0 -l tcp://0.0.0.0:65535",
-    "serve-stable": "serve dist/client0,6.0 -l tcp://0.0.0.0:65535",
+    "serve-dev": "serve dist/client -l tcp://0.0.0.0:65535"
   },
   "dependencies": {
     "@types/lodash-es": "^4.17.6",
