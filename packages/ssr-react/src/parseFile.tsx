@@ -358,7 +358,7 @@ function 订单列列XLSX下载(name: string, aoa: any[][]) {
     row.map((content, c) => {
       if (!content?.match(/订单编号|手机尾号/)) return;
       const cell = sheet[xlsx.utils.encode_cell({ r, c: c + 1 })];
-      cell.s = { font: { sz: 36 } };
+      cell.s = { font: { sz: "36pt", bold: true } };
       console.log(cell, sheet[xlsx.utils.encode_cell({ r, c: c + 1 })]);
       // // 单元格对齐方式
       // alignment: {
@@ -402,7 +402,11 @@ function 订单列列XLSX下载(name: string, aoa: any[][]) {
     SheetNames: [...Object.keys(Sheets)],
     Sheets,
   };
-  const wbout = xlsx.write(workbook_out, { type: "binary" });
+  const wbout = xlsx.write(workbook_out, {
+    type: "binary",
+    cellStyles: true,
+    Props: { Author: "snomiao <snomiao@gmail.com>" },
+  });
   download(wbout, name + ".xlsx");
 }
 function 商品类型解析(商品: string) {

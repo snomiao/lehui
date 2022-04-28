@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.6.4](https://github.com/snomiao/lehui/compare/lehui@0.6.3...lehui@0.6.4) (2022-04-28)
+
+
+### Bug Fixes
+
+* (20220428) 更新一批地址，星火附近小区 ([86e0eef](https://github.com/snomiao/lehui/commit/86e0eefd7c831e0daa0621d6be9410838971cfd7))
+
+
+
+
+
 ## [0.6.3](https://github.com/snomiao/lehui/compare/lehui@0.6.2...lehui@0.6.3) (2022-04-27)
 
 
