@@ -1,6 +1,7 @@
 import * as d3 from "d3";
 import { groupBy, mapValues } from "lodash-es";
 import React from "react";
+import JSONViewer from "react-json-viewer";
 import * as xlsx from "xlsx";
 import pkg from "../package.json";
 // import 'object-flattener'
@@ -81,6 +82,7 @@ const 小区地址正则表: Record<string, RegExp | string> = {
 };
 
 export function ParseFileReRender({ latestFiles }: any) {
+  // useSWR('')
   const [parseResults, setParseResults] = React.useState(null);
   React.useEffect(() => {
     Promise.all(latestFiles?.map(async (file) => await parseFile(file)) || []).then(
@@ -93,12 +95,19 @@ export function ParseFileReRender({ latestFiles }: any) {
   if (!parseResults?.length) return <>请导入要解析的文件.</>;
 
   console.log("parseResults", parseResults);
-  console.table(parseResults[0].slice(0, 20));
+  // parseResults = [{汇总, 商品销售统计, 导出订单} ]
+  // console.table(parseResults[0].slice(0, 20));
   return (
     <>
       <div>解析结果数： {parseResults.length} 个结果</div>
       {globalThis.全部下载 && <button onClick={() => globalThis.全部下载()}>全部下载</button>}
-      {/* <JSONViewer json={parseResults[0]} /> */}
+
+      {parseResults.map(({ 导出时间, 汇总 }) => (
+        <div key={导出时间}>
+          <span>{导出时间}</span>
+          <JSONViewer json={汇总} />
+        </div>
+      ))}
     </>
   );
 }
@@ -173,8 +182,8 @@ export function parseFile(file) {
           const 商品列 = [
             {
               类型: 商品类型解析(商品),
-              显示商品名: 商品.replace("$", ""),
-              raw商品: 商品,
+              商品名: 显示商品名处理(商品),
+              商品代号: 商品,
               商品单价,
               购买数量,
             },
@@ -247,11 +256,11 @@ export function parseFile(file) {
           ];
           const 商品头 = [["类型识别", "商品名称", "购买数量", "单价"]];
           const 商品信息行 = 商品列
-            .sort((a, b) => a.raw商品.localeCompare(b.raw商品))
+            .sort((a, b) => a.商品代号.localeCompare(b.商品代号))
             .sort((a, b) => a.类型.localeCompare(b.类型))
-            .flatMap(({ 类型, 显示商品名, 商品单价, 购买数量 }) => [
+            .flatMap(({ 类型, 商品名, 商品单价, 购买数量 }) => [
               类型,
-              显示商品名,
+              商品名,
               购买数量,
               `${商品单价}元`,
             ]);
@@ -270,7 +279,7 @@ export function parseFile(file) {
               return 多信息行;
             }, []),
             // 横线
-            ...[[time.slice(0, 8), `乐汇超市订单 v${pkg.version}`, "@@@@@@@@", "@@@@@@@@"]],
+            ...[[time.slice(0, 8), `乐汇购物广场订单 v${pkg.version}`, "@@@@@@@@", "@@@@@@@@"]],
             // 空
             // ...[time.slice(0, 8), "", "尾号小的", "放左边，大的放右边"].reduce(
             //   (多信息行, 信息, i) => {
@@ -314,17 +323,19 @@ export function parseFile(file) {
       ];
 
       // SKU 情况统计
-      const 增强商品销售统计表列 = 商品销售统计表列.map((e) => {
-        const 商品 = e.商品销售统计;
-        const 单价 = 捕获商品单价表[商品];
-        const 数量 = 捕获商品数量表[商品];
-        return { ...e, 单价: 单价, 数量: 数量, 小计: 单价 * 数量 };
+      const 扩展商品销售统计表列 = Object.keys(捕获商品单价表).map((商品代号) => {
+        const 单价 = 捕获商品单价表[商品代号];
+        const 数量 = 捕获商品数量表[商品代号];
+        const 小计 = 单价 * 数量;
+        return {  商品代号, 单价, 数量, 小计 };
       });
-
+      const 导出扩展商品销售统计表列 =扩展商品销售统计表列.map(({  商品代号, 单价, 数量, 小计 })=>{
+        const 商品名 = 显示商品名处理(商品代号);
+        return {商品名,  单价, 数量, 小计}
+      })
       // 肉类、蔬菜水果、百货 大类统计
-      const 商品销售统计汇总表列表 = groupBy(增强商品销售统计表列, (e) => {
-        const 商品 = e.商品销售统计;
-        return 商品大类解析(商品);
+      const 商品销售统计汇总表列表 = groupBy(扩展商品销售统计表列, ({ 商品代号 }) => {
+        return 商品大类解析(商品代号);
       });
       const 商品销售统计汇总表表 = mapValues(商品销售统计汇总表列表, (e) =>
         e.reduce(
@@ -347,18 +358,23 @@ export function parseFile(file) {
         商品销售统计汇总列列.map(([k, v]) => ({ 汇总: k, 数值: v })),
       );
       globalThis.解析结果 = {
-        订单表列: 归并订单表列,
+        导出时间,
         汇总: 增强汇总表列,
-        商品销售统计: 增强商品销售统计表列,
+        商品销售统计: 导出扩展商品销售统计表列,
+        导出订单: 导出订单XLSX列列,
       };
       globalThis.全部下载 = () => {
         表列XLSX下载("汇总", 增强汇总表列);
-        表列XLSX下载("商品销售统计", 增强商品销售统计表列);
+        表列XLSX下载("商品销售统计", 导出扩展商品销售统计表列);
         订单列列XLSX下载("顾客订单", 导出订单XLSX列列);
       };
-      resolve(导出订单XLSX列列);
+      resolve(globalThis.解析结果);
     };
   });
+}
+
+function 显示商品名处理(商品: any) {
+  return 商品.replace("$", "");
 }
 
 function 地址小区解析(地址: string) {
@@ -406,7 +422,7 @@ function 订单列列XLSX下载(name: string, aoa: any[][]) {
   // large font
   aoa.map((row, r) =>
     row.map((content, c) => {
-      if (!content?.match(/订单编号|手机尾号/)) return;
+      if (!content?.match?.(/订单编号|手机尾号/)) return;
       const cell = sheet[xlsx.utils.encode_cell({ r, c: c + 1 })];
       cell.s = { font: { sz: "36pt", bold: true } };
       console.log(cell, sheet[xlsx.utils.encode_cell({ r, c: c + 1 })]);

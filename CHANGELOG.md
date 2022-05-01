@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0](https://github.com/snomiao/lehui/compare/lehui@0.6.4...lehui@0.7.0) (2022-05-01)
+
+
+### Bug Fixes
+
+* add cellstyles and Author props ([f512cbb](https://github.com/snomiao/lehui/commit/f512cbb30ca45ec72d93d7584d9dfac061e51404))
+* 增强商品销售统计表列 ([5a4fd27](https://github.com/snomiao/lehui/commit/5a4fd277a13ef45eb1e6980b0474cb0d742d99fa))
+* 尾号 notice ([ba090c3](https://github.com/snomiao/lehui/commit/ba090c3a74ce7c8ba05fabcdcdfd31ab8368df39))
+* 识别散客 ([bc05178](https://github.com/snomiao/lehui/commit/bc0517872de00c252da6f0157eb0fab6ba3b83c2))
+
+
+### Features
+
+* 增强汇总功能 ([835b0da](https://github.com/snomiao/lehui/commit/835b0da05e1475b1982650a16cd126b118dc5464))
+
+
+
+
+
 ## [0.6.4](https://github.com/snomiao/lehui/compare/lehui@0.6.3...lehui@0.6.4) (2022-04-28)
 
 
