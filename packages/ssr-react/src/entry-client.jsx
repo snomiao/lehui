@@ -6,7 +6,7 @@ import { Debug } from "./Debug";
 ReactDOM.render(
   <BrowserRouter>
     <Switch>
-      <Route path="/">
+      <Route exact path="/">
         <App />
       </Route>
       <Route exact path="/debug">
