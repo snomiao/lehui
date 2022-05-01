@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.9.0](https://github.com/snomiao/lehui/compare/lehui@0.8.0...lehui@0.9.0) (2022-05-01)
+
+
+### Features
+
+* 增加牛奶和腌腊制品的匹配 ([59a5983](https://github.com/snomiao/lehui/commit/59a59831c93895d9fc60986b7291248bc21a585a))
+
+
+
+
+
 # [0.8.0](https://github.com/snomiao/lehui/compare/lehui@0.7.1...lehui@0.8.0) (2022-05-01)
 
 
