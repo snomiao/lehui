@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { groupBy, mapValues } from "lodash-es";
+import { groupBy, mapValues, sortBy } from "lodash-es";
 import React from "react";
 import JSONViewer from "react-json-viewer";
 import * as xlsx from "xlsx";
@@ -56,8 +56,7 @@ const 小区地址正则表: Record<string, RegExp | string> = {
   棕榈滩别墅: /金汇塘东?路?301|金汇塘东?路?369/,
   棕榈滩别墅301弄: /金汇塘东?路?301/,
   棕榈滩别墅369弄: /金汇塘东?路?369/,
-  棕榈滩海景城: /金汇塘东?路?1399弄?|金汇塘东?路?1799弄?|近海草路?|棕榈湾海景城/,
-  棕榈滩海景城北1门: /金汇塘东路?1399/,
+  棕榈滩海景城: /金汇塘东?路?1399弄?|金汇塘东?路?1799弄?|近海草路?|棕榈湾海景城|海景城/,
   棕榈滩高尔夫: /(海湾旅游区)?金汇塘东?路?88弄(近浦星公路?)/,
   棕榈滩高尔夫别墅: /海马路?4199/,
   海上皇宫: "海上皇宫",
@@ -218,7 +217,7 @@ export function parseFile(file) {
           return 订单表列;
         }, [])
         .sort((a, b) => a.手机尾号.localeCompare(b.手机尾号))
-        .sort((a, b) => a.识别小区.localeCompare(b.识别小区));
+        .sort(按识别小区比较());
 
       // 导出订单表列.
       console.log(汇总表列);
@@ -327,16 +326,17 @@ export function parseFile(file) {
         const 单价 = 捕获商品单价表[商品代号];
         const 数量 = 捕获商品数量表[商品代号];
         const 小计 = 单价 * 数量;
-        return {  商品代号, 单价, 数量, 小计 };
+        const 大类 = 商品大类解析(商品代号);
+        return { 商品代号, 大类, 单价, 数量, 小计 };
       });
-      const 导出扩展商品销售统计表列 =扩展商品销售统计表列.map(({  商品代号, 单价, 数量, 小计 })=>{
-        const 商品名 = 显示商品名处理(商品代号);
-        return {商品名,  单价, 数量, 小计}
-      })
+      const 导出扩展商品销售统计表列 = sortBy(
+        扩展商品销售统计表列.map(({ 商品代号, 单价, 数量, 小计, 大类 }) => {
+          const 商品名 = 显示商品名处理(商品代号);
+          return { 商品名, 单价, 数量, 小计, 大类 };
+        }),
+      );
       // 肉类、蔬菜水果、百货 大类统计
-      const 商品销售统计汇总表列表 = groupBy(扩展商品销售统计表列, ({ 商品代号 }) => {
-        return 商品大类解析(商品代号);
-      });
+      const 商品销售统计汇总表列表 = groupBy(扩展商品销售统计表列, ({ 大类 }) => 大类);
       const 商品销售统计汇总表表 = mapValues(商品销售统计汇总表列表, (e) =>
         e.reduce(
           (汇总, 条目) => {
@@ -371,6 +371,11 @@ export function parseFile(file) {
       resolve(globalThis.解析结果);
     };
   });
+}
+
+function 按识别小区比较(): (a: any, b: any) => number {
+  // 散客前置
+  return (a, b) => a.识别小区?.replace(/散客/, "").localeCompare(b.识别小区?.replace(/散客/, ""));
 }
 
 function 显示商品名处理(商品: any) {
@@ -423,7 +428,8 @@ function 订单列列XLSX下载(name: string, aoa: any[][]) {
   aoa.map((row, r) =>
     row.map((content, c) => {
       if (!content?.match?.(/订单编号|手机尾号/)) return;
-      const cell = sheet[xlsx.utils.encode_cell({ r, c: c + 1 })];
+      const cell: xlsx.CellObject = sheet[xlsx.utils.encode_cell({ r, c: c + 1 })];
+      cell.w = String(cell.v);
       cell.s = { font: { sz: "36pt", bold: true } };
       console.log(cell, sheet[xlsx.utils.encode_cell({ r, c: c + 1 })]);
       // // 单元格对齐方式
@@ -440,6 +446,8 @@ function 订单列列XLSX下载(name: string, aoa: any[][]) {
       // });
     }),
   );
+
+  console.log(sheet);
   // fit column width
   sheet["!cols"] = fitToColumn(aoa);
   function fitToColumn(arrayOfArray) {
@@ -458,7 +466,6 @@ function 订单列列XLSX下载(name: string, aoa: any[][]) {
       ),
     }));
   }
-
   console.log("large font done");
 
   const Sheets = {
