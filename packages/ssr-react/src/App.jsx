@@ -1,4 +1,5 @@
 import React, { useLayoutEffect, useState } from "react";
+import * as XLSX from "xlsx-js-style";
 import pkg from "../package.json";
 // Auto generates routes from files under ./pages
 // https://vitejs.dev/guide/features.html#glob-import
@@ -20,6 +21,26 @@ const APPTITLE = `乐汇购物广场订单汇总系统 v${pkg.version}`
 const isSSR = () => !globalThis?.window;
 let latestFiles = null;
 
+const downloadDemo = () => {
+  // STEP 1: Create a new workbook
+  const wb = XLSX.utils.book_new();
+
+  // STEP 2: Create data rows and styles
+  let row = [
+    { v: "Courier: 24", t: "s", s: { font: { name: "Courier", sz: 24 } } },
+    { v: "bold & color", t: "s", s: { font: { bold: true, color: { rgb: "FF0000" } } } },
+    { v: "fill: color", t: "s", s: { fill: { fgColor: { rgb: "E9E9E9" } } } },
+    { v: "line\nbreak", t: "s", s: { alignment: { wrapText: true } } },
+  ];
+
+  // STEP 3: Create worksheet with rows; Add worksheet to workbook
+  const ws = XLSX.utils.aoa_to_sheet([row]);
+  XLSX.utils.book_append_sheet(wb, ws, "readme demo");
+
+  // STEP 4: Write Excel file to browser
+  XLSX.writeFile(wb, "xlsx-js-style-demo.xlsx");
+
+}
 export function App() {
   const [rand, onLatestFilesUpdate] = useState(0);
   if (!isSSR()) {
@@ -43,7 +64,9 @@ export function App() {
         <h1 className="center">{APPTITLE}</h1>
       </div>
       <main>
-        使用方法：
+        <div onClick={() => downloadDemo()}>
+          使用方法：
+        </div>
         <ol>
           <li> 拖拽 订单记录 表格 .xlsx 到下面方框这里进行分析 </li>
           <li> 或者点击下面方框来选择文件 </li>

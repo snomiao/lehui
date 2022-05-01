@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.1](https://github.com/snomiao/lehui/compare/lehui@0.7.0...lehui@0.7.1) (2022-05-01)
+
+
+### Bug Fixes
+
+* add 大类显示 in 扩展商品统计表 ([51e2f26](https://github.com/snomiao/lehui/commit/51e2f2604d2e8e0bb3a495235cd283cfa6106fc3))
+* 分离商品代号 ([ad87c76](https://github.com/snomiao/lehui/commit/ad87c763a9b696522dce7015cec097e1956c0328))
+* 原导出时间 ([9716fe3](https://github.com/snomiao/lehui/commit/9716fe3ba169ac43b757dd5ddec46ab6f97e3cda))
+
+
+
+
+
 # [0.7.0](https://github.com/snomiao/lehui/compare/lehui@0.6.4...lehui@0.7.0) (2022-05-01)
 
 

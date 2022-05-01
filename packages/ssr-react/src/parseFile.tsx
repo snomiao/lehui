@@ -1,10 +1,16 @@
 import * as d3 from "d3";
-import { groupBy, mapValues, sortBy } from "lodash-es";
+import { countBy, groupBy, mapValues, sortBy } from "lodash-es";
 import React from "react";
 import JSONViewer from "react-json-viewer";
-import * as xlsx from "xlsx";
+// import * as xlsx from "xlsx-style";
+// import "xlsx-style";
+// import * as XLSX from "xlsx";
+// import * as xlsxStyle from "xlsx-style";
+import * as XLSX from "xlsx-js-style";
 import pkg from "../package.json";
 // import 'object-flattener'
+
+// declare global {  const XLSX: any;}
 
 const 商品类型正则表: Record<string, RegExp | string> = {
   // 类型
@@ -117,12 +123,12 @@ export function parseFile(file) {
     reader.readAsBinaryString(file);
     reader.onload = (e) => {
       var file_content = e.target.result;
-      var workbook = xlsx.read(file_content, { type: "binary" });
+      var workbook = XLSX.read(file_content, { type: "binary" });
 
       const 工作表列表 = [...Object.values(workbook.Sheets)];
 
       const sheet = 工作表列表[0];
-      const csv = xlsx.utils.sheet_to_csv(sheet);
+      const csv = XLSX.utils.sheet_to_csv(sheet);
 
       // const splitCSV
       const lines = csv.split("\n");
@@ -135,6 +141,10 @@ export function parseFile(file) {
 
       const 汇总表列 = 子表列提取(lines, ["汇总", "数值"], ["商品销售统计", "数量"]);
       const 商品销售统计表列 = 子表列提取(lines, ["商品销售统计", "数量"], ["", ""]);
+      const 商品名列 = 商品销售统计表列.map((e) => e.商品销售统计);
+      const 起始字符列 = 商品名列.map((e) => e?.[0]);
+      const 最大起始字符 = countBy(起始字符列);
+
       const 未合并订单表列 = 子表列提取(
         lines,
         [
@@ -379,7 +389,7 @@ function 按识别小区比较(): (a: any, b: any) => number {
 }
 
 function 显示商品名处理(商品: any) {
-  return 商品.replace("$", "");
+  return 商品.replace(/^[a]/, "");
 }
 
 function 地址小区解析(地址: string) {
@@ -410,28 +420,50 @@ function 子表列提取<H extends string>(lines: string[], 表头: H[], 表尾:
   return 表列 as { [k in H]: any }[];
 }
 
+const Author = "snomiao <snomiao@gmail.com>";
 function 表列XLSX下载(name: string, jsonArray: any) {
   const Sheets = {
-    [name]: xlsx.utils.json_to_sheet(jsonArray),
+    [name]: XLSX.utils.json_to_sheet(jsonArray),
   };
   const workbook_out = {
     SheetNames: [...Object.keys(Sheets)],
     Sheets,
   };
-  const wbout = xlsx.write(workbook_out, { type: "binary" });
+  const wbout = XLSX.writeXLSX(workbook_out, {
+    type: "binary",
+    cellStyles: true,
+    Props: { Author },
+  });
   download(wbout, `${name}.xlsx`);
 }
 
 function 订单列列XLSX下载(name: string, aoa: any[][]) {
-  const sheet = xlsx.utils.aoa_to_sheet(aoa);
+  const styledAOA = [];
+  const sheetToModify = XLSX.utils.aoa_to_sheet(aoa, { cellStyles: true });
   // large font
-  aoa.map((row, r) =>
-    row.map((content, c) => {
-      if (!content?.match?.(/订单编号|手机尾号/)) return;
-      const cell: xlsx.CellObject = sheet[xlsx.utils.encode_cell({ r, c: c + 1 })];
-      cell.w = String(cell.v);
-      cell.s = { font: { sz: "36pt", bold: true } };
-      console.log(cell, sheet[xlsx.utils.encode_cell({ r, c: c + 1 })]);
+  aoa.map((row, r) => {
+    styledAOA[r] = [];
+    return row.map((content, c) => {
+      const sizingLehui = Boolean(content?.match?.(/乐汇购物/));
+      const sizingNumber = Boolean(row[c - 1]?.match?.(/订单编号|手机尾号/));
+      // const sizing = Boolean(row[c-1]?.match?.(/订单编号|手机尾号/))
+      // const style: XLSX.CellStyle = { font: { name: "Courier", sz: 36, bold: true, underline: true } };
+      // const cell = {v: content, w: String(content),
+      // }
+      // styledAOA[r][c] =cell
+
+      const sizing = sizingNumber || sizingLehui;
+
+      if (!sizing) return;
+
+      const cell: XLSX.CellObject = sheetToModify[XLSX.utils.encode_cell({ r, c: c })];
+      // cell.w = String(cell.v);
+      const style: XLSX.CellStyle = {
+        font: { sz: sizingLehui ? 24 : sizingNumber ? 36 : 12, bold: true, underline: true },
+      };
+      cell.s = style;
+      console.log(cell, sheetToModify[XLSX.utils.encode_cell({ r, c: c })]);
+
       // // 单元格对齐方式
       // alignment: {
       //   /// 自动换行
@@ -444,47 +476,45 @@ function 订单列列XLSX下载(name: string, aoa: any[][]) {
       // Object.assign(cell, {
       //   s: { font: { sz: "36", bold: true } },
       // });
-    }),
-  );
-
-  console.log(sheet);
+    });
+  });
+  console.log(sheetToModify);
   // fit column width
-  sheet["!cols"] = fitToColumn(aoa);
-  function fitToColumn(arrayOfArray) {
-    // get maximum character of each column
-    return arrayOfArray[0].map((cell, i) => ({
-      wch: Math.max(
-        ...arrayOfArray.map((row) =>
-          row[i]
-            ? row[i]
-                .toString()
-                .split("")
-                .map((e) => (e.charCodeAt(0) < 128 ? 1 : 2))
-                .reduce((a, b) => a + b)
-            : 0,
-        ),
-      ),
-    }));
-  }
+  sheetToModify["!cols"] = fitToColumn(aoa);
   console.log("large font done");
 
-  const Sheets = {
-    [name]: sheet,
-  };
-  const workbook_out = {
-    SheetNames: [...Object.keys(Sheets)],
-    Sheets,
-  };
-  const wbout = xlsx.write(workbook_out, {
+  const wb = XLSX.utils.book_new();
+  const ws = sheetToModify;
+  XLSX.utils.book_append_sheet(wb, ws, name);
+
+  // this keeps style
+  XLSX.writeFileXLSX(wb, `${name}.xlsx`);
+
+  // this will lost style
+  // const wbout = XLSX.writeXLSX(wb, {
+  //   type: "binary",
+  //   // cellStyles: true,
+  //   Props: { Author },
+  // });
+  // download(wbout, `${name}.xlsx`);
+}
+async function xlsxDownloadWithStyle(
+  workbook_out: { SheetNames: string[]; Sheets: any },
+  name: string,
+) {
+  // const xlsxStyle = await import("xlsx-style/dist/cpexcel.js");
+  // const xlsxStyle = await import("xlsx-style");
+  const wbout = XLSX.writeXLSX(workbook_out, {
     type: "binary",
     cellStyles: true,
-    Props: { Author: "snomiao <snomiao@gmail.com>" },
+    Props: { Author },
   });
   download(wbout, `${name}.xlsx`);
 }
+
 function 商品大类解析(商品: string) {
-  if (商品.startsWith("a")) return "肉类";
-  if (商品.startsWith("$")) return "蔬菜水果";
+  if (商品?.match?.(/^[a#]/)) return "肉类";
+  if (商品?.match?.(/^[$%]/)) return "蔬菜水果";
   return "百货";
 }
 function 商品类型解析(商品: string) {
@@ -517,4 +547,24 @@ function download(content: string, filename: string) {
   eleLink.click();
   // 然后移除
   document.body.removeChild(eleLink);
+}
+function sheetFitToColumn(sheet) {
+  const aoj = d3.csvParseRow(XLSX.utils.sheet_to_csv(sheet));
+  // TODO check this
+}
+function fitToColumn(arrayOfArray) {
+  // get maximum character of each column
+  return arrayOfArray[0].map((cell, i) => ({
+    wch: Math.max(
+      ...arrayOfArray.map((row) =>
+        row[i]
+          ? row[i]
+              .toString()
+              .split("")
+              .map((e) => (e.charCodeAt(0) < 128 ? 1 : 2))
+              .reduce((a, b) => a + b)
+          : 0,
+      ),
+    ),
+  }));
 }
