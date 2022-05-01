@@ -1,7 +1,9 @@
 import * as d3 from "d3";
+import { groupBy, mapValues } from "lodash-es";
 import React from "react";
 import * as xlsx from "xlsx";
 import pkg from "../package.json";
+// import 'object-flattener'
 
 const 商品类型正则表: Record<string, RegExp | string> = {
   // 类型
@@ -146,7 +148,9 @@ export function parseFile(file) {
         ],
         ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
       );
-
+      const 捕获商品单价表 = {};
+      const 捕获商品数量表 = {};
+      // "商品单价（元）"
       const 归并订单表列 = 未合并订单表列
         .reduce((订单表列, 订单行) => {
           const {
@@ -167,12 +171,14 @@ export function parseFile(file) {
           const 商品列 = [
             {
               类型: 商品类型解析(商品),
-              商品: 商品.replace("$", ""),
+              显示商品名: 商品.replace("$", ""),
               raw商品: 商品,
               商品单价,
               购买数量,
             },
           ];
+          捕获商品单价表[商品] = 商品单价;
+          捕获商品数量表[商品] = (捕获商品数量表[商品] || 0) + 购买数量;
           if (!订单编号) {
             const 最近订单 = 订单表列[订单表列.length - 1];
             最近订单.商品列.push(...商品列);
@@ -194,7 +200,7 @@ export function parseFile(file) {
             // },
             自提时间,
             商品列,
-            订单金额: 订单金额 + "元",
+            订单金额: `${订单金额}元`,
             顾客备注,
           };
           订单表列.push(订单详情);
@@ -241,11 +247,11 @@ export function parseFile(file) {
           const 商品信息行 = 商品列
             .sort((a, b) => a.raw商品.localeCompare(b.raw商品))
             .sort((a, b) => a.类型.localeCompare(b.类型))
-            .flatMap(({ 类型, 商品, 商品单价, 购买数量 }) => [
+            .flatMap(({ 类型, 显示商品名, 商品单价, 购买数量 }) => [
               类型,
-              商品,
+              显示商品名,
               购买数量,
-              商品单价 + "元",
+              `${商品单价}元`,
             ]);
 
           const [date, time] = new Date(+new Date() + 8 * 3600e3)
@@ -304,13 +310,48 @@ export function parseFile(file) {
         }, []),
         ...订单XLSX列列,
       ];
-      // const 商品销售统计汇总表 = 商品销售统计表列
-      
-      globalThis.解析结果 = { 订单表列: 归并订单表列, 汇总表列 , 商品销售统计表列};
+
+      // SKU 情况统计
+      const 增强商品销售统计表列 = 商品销售统计表列.map((e) => {
+        const 商品 = e.商品销售统计;
+        const 单价 = 捕获商品单价表[商品];
+        const 数量 = 捕获商品数量表[商品];
+        return { ...e, 单价: 单价, 数量: 数量, 小计: 单价 * 数量 };
+      });
+
+      // 肉类、蔬菜水果、百货 大类统计
+      const 商品销售统计汇总表列表 = groupBy(增强商品销售统计表列, (e) => {
+        const 商品 = e.商品销售统计;
+        return 商品大类解析(商品);
+      });
+      const 商品销售统计汇总表表 = mapValues(商品销售统计汇总表列表, (e) =>
+        e.reduce(
+          (汇总, 条目) => {
+            const 金额 = 汇总.金额 + 条目.小计;
+            const 数量 = 汇总.数量 + 条目.数量;
+            return { 金额, 数量 };
+          },
+          { 数量: 0, 金额: 0 },
+        ),
+      );
+      const 商品销售统计汇总列列 = Object.entries(商品销售统计汇总表表).flatMap(
+        ([类型, { 数量, 金额 }]) => [
+          [`${类型}数量`, 数量],
+          [`${类型}金额`, 金额],
+          [`${类型}单品均价`, 金额 / 数量],
+        ],
+      );
+      const 增强汇总表列 = 汇总表列.concat(
+        商品销售统计汇总列列.map(([k, v]) => ({ 汇总: k, 数值: v })),
+      );
+      globalThis.解析结果 = {
+        订单表列: 归并订单表列,
+        汇总: 增强汇总表列,
+        商品销售统计: 增强商品销售统计表列,
+      };
       globalThis.全部下载 = () => {
-        表列XLSX下载("汇总表", 汇总表列);
-        表列XLSX下载("商品销售统计表列", 商品销售统计表列);
-        
+        表列XLSX下载("汇总", 增强汇总表列);
+        表列XLSX下载("商品销售统计", 商品销售统计表列);
         订单列列XLSX下载("顾客订单列", 导出订单XLSX列列);
       };
       resolve(导出订单XLSX列列);
@@ -355,7 +396,7 @@ function 表列XLSX下载(name: string, jsonArray: any) {
     Sheets,
   };
   const wbout = xlsx.write(workbook_out, { type: "binary" });
-  download(wbout, name + ".xlsx");
+  download(wbout, `${name}.xlsx`);
 }
 
 function 订单列列XLSX下载(name: string, aoa: any[][]) {
@@ -414,7 +455,7 @@ function 订单列列XLSX下载(name: string, aoa: any[][]) {
     cellStyles: true,
     Props: { Author: "snomiao <snomiao@gmail.com>" },
   });
-  download(wbout, name + ".xlsx");
+  download(wbout, `${name}.xlsx`);
 }
 function 商品大类解析(商品: string) {
   if (商品.startsWith("a")) return "肉类";
@@ -422,7 +463,7 @@ function 商品大类解析(商品: string) {
   return "百货";
 }
 function 商品类型解析(商品: string) {
-  return 商品大类解析(商品)
+  return 商品大类解析(商品);
   // return Object.entries(商品类型正则表)
   //   .map(([类型, 模式]) => ({ 类型, 模式 }))
   //   .filter((e) => 商品.match(e.类型) || (e.模式 && 商品.match(e.模式)))

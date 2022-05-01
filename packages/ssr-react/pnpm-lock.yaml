@@ -11,7 +11,9 @@ specifiers:
   dotenv: ^16.0.0
   express: ^4.17.3
   file-saver: ^2.0.5
+  flat: ^5.0.2
   lodash-es: ^4.17.21
+  object-flattener: ^1.0.1
   prop-types: ^15.8.1
   react: ^17.0.2
   react-dom: ^17.0.2
@@ -35,7 +37,9 @@ dependencies:
   dotenv: 16.0.0
   express: 4.17.3
   file-saver: 2.0.5
+  flat: 5.0.2
   lodash-es: 4.17.21
+  object-flattener: 1.0.1
   prop-types: 15.8.1
   react: 17.0.2
   react-dom: 17.0.2_react@17.0.2
@@ -2612,6 +2616,11 @@ packages:
       unpipe: 1.0.0
     dev: false
 
+  /flat/5.0.2:
+    resolution: {integrity: sha512-b6suED+5/3rTpUBdG1gupIl8MPFCAMA0QXwmljLhvCUKcUvdE4gWky9zpuGCcXHOsz4J9wPGNWq6OKpmIzz3hQ==}
+    hasBin: true
+    dev: false
+
   /forwarded/0.2.0:
     resolution: {integrity: sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==}
     engines: {node: '>= 0.6'}
@@ -3234,6 +3243,10 @@ packages:
   /object-assign/4.1.1:
     resolution: {integrity: sha1-IQmtx5ZYh8/AXLvUQsrIv7s2CGM=}
     engines: {node: '>=0.10.0'}
+    dev: false
+
+  /object-flattener/1.0.1:
+    resolution: {integrity: sha512-+WrKs65dlFmS4Al3bH6ge1kyBpt7bZx5xDg1LtrvwUQF6XC8hD28/wO+Q4dvGmthA8dj+/Ai7aqIUeL4XIT/nw==}
     dev: false
 
   /object-inspect/1.12.0:
