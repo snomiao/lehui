@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.8.0](https://github.com/snomiao/lehui/compare/lehui@0.7.1...lehui@0.8.0) (2022-05-01)
+
+
+### Features
+
+* dynamic 商品类型表 ([3069285](https://github.com/snomiao/lehui/commit/3069285dc8f03e22897ae8a40b8eac8c82edbc28))
+
+
+
+
+
 ## [0.7.1](https://github.com/snomiao/lehui/compare/lehui@0.7.0...lehui@0.7.1) (2022-05-01)
 
 ### Bug Fixes
