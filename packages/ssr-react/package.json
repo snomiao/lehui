@@ -3,6 +3,7 @@
   "version": "0.7.1",
   "private": true,
   "scripts": {
+    "start": "vite",
     "build": "npm run build:client",
     "build-serve": "npm run build:client && npm run serve-dev",
     "build:client": "vite build --outDir dist/client",
