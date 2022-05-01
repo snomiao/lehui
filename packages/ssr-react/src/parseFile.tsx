@@ -103,7 +103,7 @@ export function ParseFileReRender({ latestFiles }: any) {
 
       {parseResults.map(({ 导出时间, 汇总 }) => (
         <div key={导出时间}>
-          <span>{导出时间}</span>
+          <span>原导出时间：{导出时间}</span>
           <JSONViewer json={汇总} />
         </div>
       ))}
