@@ -3,19 +3,16 @@ import React from "react";
 import * as xlsx from "xlsx";
 import pkg from "../package.json";
 
-const s2ab = (s) => {
-  //字符串转字符流
-  const buf = new ArrayBuffer(s.length);
-  const view = new Uint8Array(buf);
-  for (let i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xff;
-  return buf;
-};
 const 商品类型正则表: Record<string, RegExp | string> = {
-  肉: /瘦肉|肥肉/,
-  盒装肉: /[虾鸡猪鸭鱼].*?[盒袋]/,
-  蔬菜: /洋葱|菜/,
+  // 类型
+  肉类: /瘦肉|肥肉/,
+  蔬菜水果: /蔬菜|水果/,
+
+  // 子类型
+  蔬菜: /洋葱|.菜/,
   水果: /苹果|香蕉|梨|菠萝|果/,
-  饮料: /可乐|汽水|奶茶|水|汁/,
+  其它: /可乐|汽水|奶茶|.水|.汁/,
+  盒装肉: /[虾鸡猪鸭鱼].*?[盒袋]/,
   // 百货: /.*/,
 };
 const 小区地址正则表: Record<string, RegExp | string> = {
@@ -80,38 +77,6 @@ const 小区地址正则表: Record<string, RegExp | string> = {
   金海湾花苑: /金汇塘东?路??1900/,
   阳光海岸: /海湾路?369/,
 };
-const 地址小区解析 = (地址) => {
-  if (!地址.trim()) return "";
-  const 正则匹配结果 = Object.entries(小区地址正则表)
-    .map(([小区, 地址]) => ({
-      小区,
-      地址,
-    }))
-    .filter((小区地址) => 地址.match(小区地址.小区) || (小区地址.地址 && 地址.match(小区地址.地址)))
-    .map((e) => e?.小区);
-  return (
-    // 正则表达式匹配到
-    (正则匹配结果.length && 正则匹配结果.join("/")) ||
-    // 未知
-    ""
-  );
-  // 1. tab/acti/
-};
-const download = function (content, filename) {
-  if (!globalThis.document) return;
-  // 创建隐藏的可下载链接
-  const eleLink = document.createElement("a");
-  eleLink.download = filename;
-  eleLink.style.display = "none";
-  // 字符内容转变成blob地址
-  var blob = new Blob([s2ab(content)]);
-  eleLink.href = URL.createObjectURL(blob);
-  // 触发点击
-  document.body.appendChild(eleLink);
-  eleLink.click();
-  // 然后移除
-  document.body.removeChild(eleLink);
-};
 
 export function ParseFileReRender({ latestFiles }: any) {
   const [parseResults, setParseResults] = React.useState(null);
@@ -157,22 +122,32 @@ export function parseFile(file) {
         .replace(/,/g, "");
       // .match(/导出时间[:：]\s*?(.*?)-(.*?)/);
       console.log(导出时间);
-      const 汇总数值rawlines = lines.slice(lines.findIndex((e) => e.startsWith("汇总,数值")));
-      const 汇总数值csv = 汇总数值rawlines
-        .slice(
-          0,
-          汇总数值rawlines.findIndex((e) => e.startsWith(",,,,,,")),
-        )
-        .join("\n");
-      const 汇总表列 = d3.csvParse(汇总数值csv).map(({ [""]: empty, ...e }) => ({ ...e }));
 
-      const 订单rawlines = lines.slice(
-        lines.findIndex((e) => e.startsWith("订单编号,付款状态,订购时间,订单类型,")),
+      const 汇总表列 = 子表列提取(lines, ["汇总", "数值"], ["商品销售统计", "数量"]);
+      const 商品销售统计表列 = 子表列提取(lines, ["商品销售统计", "数量"], ["", ""]);
+      const 未合并订单表列 = 子表列提取(
+        lines,
+        [
+          "订单编号",
+          "付款状态",
+          "订购时间",
+          "订单类型",
+          "微信昵称/备注名",
+          "顾客姓名",
+          "顾客电话",
+          "顾客地址",
+          "自提地址",
+          "自提时间",
+          "商品",
+          "商品单价（元）",
+          "购买数量",
+          "订单金额（元）",
+          "顾客备注",
+        ],
+        ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
       );
-      const 订单csv = 订单rawlines.slice(0).join("\n");
-      const 订单表列 = d3
-        .csvParse(订单csv)
-        .map(({ [""]: empty, ...e }) => ({ ...e }))
+
+      const 归并订单表列 = 未合并订单表列
         .reduce((订单表列, 订单行) => {
           const {
             订单编号,
@@ -230,10 +205,10 @@ export function parseFile(file) {
 
       // 导出订单表列.
       console.log(汇总表列);
-      console.log(订单表列);
+      console.log(归并订单表列);
       const 宽度 = 4;
 
-      const 订单XLSX列列 = 订单表列.flatMap(
+      const 订单XLSX列列 = 归并订单表列.flatMap(
         ({
           识别小区,
           订单编号,
@@ -329,16 +304,48 @@ export function parseFile(file) {
         }, []),
         ...订单XLSX列列,
       ];
-
-      globalThis.解析结果 = { 订单表列, 汇总表列 };
+      // const 商品销售统计汇总表 = 商品销售统计表列
+      
+      globalThis.解析结果 = { 订单表列: 归并订单表列, 汇总表列 , 商品销售统计表列};
       globalThis.全部下载 = () => {
         表列XLSX下载("汇总表", 汇总表列);
+        表列XLSX下载("商品销售统计表列", 商品销售统计表列);
+        
         订单列列XLSX下载("顾客订单列", 导出订单XLSX列列);
       };
       resolve(导出订单XLSX列列);
     };
   });
 }
+
+function 地址小区解析(地址: string) {
+  if (!地址.trim()) return "";
+  const 正则匹配结果 = Object.entries(小区地址正则表)
+    .map(([小区, 地址]) => ({
+      小区,
+      地址,
+    }))
+    .filter((小区地址) => 地址.match(小区地址.小区) || (小区地址.地址 && 地址.match(小区地址.地址)))
+    .map((e) => e?.小区);
+  return (
+    // 正则表达式匹配到
+    (正则匹配结果.length && 正则匹配结果.join("/")) ||
+    // 未知
+    ""
+  );
+  // 1. tab/acti/
+}
+
+function 子表列提取<H extends string>(lines: string[], 表头: H[], 表尾: string[]) {
+  // ref: [keyof for arrays · Issue #20965 · microsoft/TypeScript]( https://github.com/Microsoft/TypeScript/issues/20965 )
+  const startIndex = lines.findIndex((e) => e.startsWith(表头.join(",")));
+  const subLines = lines.slice(startIndex);
+  const endIndex = subLines.findIndex((e) => e.startsWith(表尾.join(",")));
+  const csvContent = subLines.slice(0, endIndex).join("\n");
+  const 表列 = d3.csvParse(csvContent).map(({ [""]: empty, ...e }) => ({ ...e }));
+  return 表列 as { [k in H]: any }[];
+}
+
 function 表列XLSX下载(name: string, jsonArray: any) {
   const Sheets = {
     [name]: xlsx.utils.json_to_sheet(jsonArray),
@@ -409,10 +416,39 @@ function 订单列列XLSX下载(name: string, aoa: any[][]) {
   });
   download(wbout, name + ".xlsx");
 }
+function 商品大类解析(商品: string) {
+  if (商品.startsWith("a")) return "肉类";
+  if (商品.startsWith("$")) return "蔬菜水果";
+  return "百货";
+}
 function 商品类型解析(商品: string) {
-  return Object.entries(商品类型正则表)
-    .map(([类型, 模式]) => ({ 类型, 模式 }))
-    .filter((e) => 商品.match(e.类型) || (e.模式 && 商品.match(e.模式)))
-    .map((e) => e?.类型)
-    .join("/");
+  return 商品大类解析(商品)
+  // return Object.entries(商品类型正则表)
+  //   .map(([类型, 模式]) => ({ 类型, 模式 }))
+  //   .filter((e) => 商品.match(e.类型) || (e.模式 && 商品.match(e.模式)))
+  //   .map((e) => e?.类型)
+  //   .join("/");
+}
+function string2arrayBuffer(s: string) {
+  //字符串转字符流
+  const buf = new ArrayBuffer(s.length);
+  const view = new Uint8Array(buf);
+  for (let i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xff;
+  return buf;
+}
+
+function download(content: string, filename: string) {
+  if (!globalThis.document) return;
+  // 创建隐藏的可下载链接
+  const eleLink = document.createElement("a");
+  eleLink.download = filename;
+  eleLink.style.display = "none";
+  // 字符内容转变成blob地址
+  var blob = new Blob([string2arrayBuffer(content)]);
+  eleLink.href = URL.createObjectURL(blob);
+  // 触发点击
+  document.body.appendChild(eleLink);
+  eleLink.click();
+  // 然后移除
+  document.body.removeChild(eleLink);
 }
