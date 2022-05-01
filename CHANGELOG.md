@@ -5,57 +5,36 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [0.7.1](https://github.com/snomiao/lehui/compare/lehui@0.7.0...lehui@0.7.1) (2022-05-01)
 
-
 ### Bug Fixes
 
-* add 大类显示 in 扩展商品统计表 ([51e2f26](https://github.com/snomiao/lehui/commit/51e2f2604d2e8e0bb3a495235cd283cfa6106fc3))
-* 分离商品代号 ([ad87c76](https://github.com/snomiao/lehui/commit/ad87c763a9b696522dce7015cec097e1956c0328))
-* 原导出时间 ([9716fe3](https://github.com/snomiao/lehui/commit/9716fe3ba169ac43b757dd5ddec46ab6f97e3cda))
-
-
-
-
+- add 大类显示 in 扩展商品统计表 ([51e2f26](https://github.com/snomiao/lehui/commit/51e2f2604d2e8e0bb3a495235cd283cfa6106fc3))
+- 分离商品代号 ([ad87c76](https://github.com/snomiao/lehui/commit/ad87c763a9b696522dce7015cec097e1956c0328))
+- 原导出时间 ([9716fe3](https://github.com/snomiao/lehui/commit/9716fe3ba169ac43b757dd5ddec46ab6f97e3cda))
 
 # [0.7.0](https://github.com/snomiao/lehui/compare/lehui@0.6.4...lehui@0.7.0) (2022-05-01)
 
-
 ### Bug Fixes
 
-* add cellstyles and Author props ([f512cbb](https://github.com/snomiao/lehui/commit/f512cbb30ca45ec72d93d7584d9dfac061e51404))
-* 增强商品销售统计表列 ([5a4fd27](https://github.com/snomiao/lehui/commit/5a4fd277a13ef45eb1e6980b0474cb0d742d99fa))
-* 尾号 notice ([ba090c3](https://github.com/snomiao/lehui/commit/ba090c3a74ce7c8ba05fabcdcdfd31ab8368df39))
-* 识别散客 ([bc05178](https://github.com/snomiao/lehui/commit/bc0517872de00c252da6f0157eb0fab6ba3b83c2))
-
+- add cellstyles and Author props ([f512cbb](https://github.com/snomiao/lehui/commit/f512cbb30ca45ec72d93d7584d9dfac061e51404))
+- 增强商品销售统计表列 ([5a4fd27](https://github.com/snomiao/lehui/commit/5a4fd277a13ef45eb1e6980b0474cb0d742d99fa))
+- 尾号 notice ([ba090c3](https://github.com/snomiao/lehui/commit/ba090c3a74ce7c8ba05fabcdcdfd31ab8368df39))
+- 识别散客 ([bc05178](https://github.com/snomiao/lehui/commit/bc0517872de00c252da6f0157eb0fab6ba3b83c2))
 
 ### Features
 
-* 增强汇总功能 ([835b0da](https://github.com/snomiao/lehui/commit/835b0da05e1475b1982650a16cd126b118dc5464))
-
-
-
-
+- 增强汇总功能 ([835b0da](https://github.com/snomiao/lehui/commit/835b0da05e1475b1982650a16cd126b118dc5464))
 
 ## [0.6.4](https://github.com/snomiao/lehui/compare/lehui@0.6.3...lehui@0.6.4) (2022-04-28)
 
-
 ### Bug Fixes
 
-* (20220428) 更新一批地址，星火附近小区 ([86e0eef](https://github.com/snomiao/lehui/commit/86e0eefd7c831e0daa0621d6be9410838971cfd7))
-
-
-
-
+- (20220428) 更新一批地址，星火附近小区 ([86e0eef](https://github.com/snomiao/lehui/commit/86e0eefd7c831e0daa0621d6be9410838971cfd7))
 
 ## [0.6.3](https://github.com/snomiao/lehui/compare/lehui@0.6.2...lehui@0.6.3) (2022-04-27)
 
-
 ### Bug Fixes
 
-* (20220427) add some address ([bec5eff](https://github.com/snomiao/lehui/commit/bec5effb3099dda961998a08a9327a19e4101a6b))
-
-
-
-
+- (20220427) add some address ([bec5eff](https://github.com/snomiao/lehui/commit/bec5effb3099dda961998a08a9327a19e4101a6b))
 
 ## [0.6.2](https://github.com/snomiao/lehui/compare/lehui@0.6.1...lehui@0.6.2) (2022-04-20)
 

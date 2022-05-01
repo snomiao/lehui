@@ -268,7 +268,7 @@ export function parseFile(file) {
             // "单价 * 数量",
             // 商品单价_元 + "元 x " + 购买数量,
           ]);
-          
+
           const 返回多信息行 = [
             // 空
             ...[""].reduce((多信息行, 信息, i) => {

@@ -3,7 +3,6 @@
   "version": "0.7.1",
   "private": true,
   "scripts": {
-    "start": "vite",
     "build": "npm run build:client",
     "build-serve": "npm run build:client && npm run serve-dev",
     "build:client": "vite build --outDir dist/client",
@@ -15,7 +14,8 @@
     "docs-build": "vite build --outDir ../../docs/",
     "generate": "vite build --outDir dist/static && npm run build:server && node prerender",
     "serve": "cross-env NODE_ENV=production node server",
-    "serve-dev": "serve dist/client -l tcp://0.0.0.0:65535"
+    "serve-dev": "serve dist/client -l tcp://0.0.0.0:65535",
+    "start": "vite"
   },
   "dependencies": {
     "@types/lodash-es": "^4.17.6",

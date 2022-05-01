@@ -16,7 +16,7 @@ import { parseFile, ParseFileReRender } from "./parseFile";
 //     component: pages[path].default
 //   }
 // })
-const APPTITLE = `乐汇购物广场订单汇总系统 v${pkg.version}`
+const APPTITLE = `乐汇购物广场订单汇总系统 v${pkg.version}`;
 // console.log(initDatas);
 const isSSR = () => !globalThis?.window;
 let latestFiles = null;
@@ -39,8 +39,7 @@ const downloadDemo = () => {
 
   // STEP 4: Write Excel file to browser
   XLSX.writeFile(wb, "xlsx-js-style-demo.xlsx");
-
-}
+};
 export function App() {
   const [rand, onLatestFilesUpdate] = useState(0);
   if (!isSSR()) {
@@ -64,9 +63,7 @@ export function App() {
         <h1 className="center">{APPTITLE}</h1>
       </div>
       <main>
-        <div onClick={() => downloadDemo()}>
-          使用方法：
-        </div>
+        <div onClick={() => downloadDemo()}>使用方法：</div>
         <ol>
           <li> 拖拽 订单记录 表格 .xlsx 到下面方框这里进行分析 </li>
           <li> 或者点击下面方框来选择文件 </li>
@@ -89,11 +86,15 @@ export function App() {
         </div>
       </main>
       <main>
-        <div style={{
-          float: "right"
-        }}>
-          {"作者： snomiao"}<br />
-          {"微信：@snomiao"}<br />
+        <div
+          style={{
+            float: "right",
+          }}
+        >
+          {"作者： snomiao"}
+          <br />
+          {"微信：@snomiao"}
+          <br />
         </div>
       </main>
     </div>
@@ -104,7 +105,7 @@ function reparse() {
   [...file.files].map(parseFile);
 }
 function appInitEffect(onLatestFilesUpdate) {
-  document.title = APPTITLE
+  document.title = APPTITLE;
   const status = {};
   setTimeout(() => {
     // UI响应部分
