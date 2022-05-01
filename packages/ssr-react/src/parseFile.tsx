@@ -8,6 +8,8 @@ import JSONViewer from "react-json-viewer";
 // import * as xlsxStyle from "xlsx-style";
 import * as XLSX from "xlsx-js-style";
 import pkg from "../package.json";
+import 商品类型表 from "./商品类型";
+
 // import 'object-flattener'
 
 // declare global {  const XLSX: any;}
@@ -336,7 +338,7 @@ export function parseFile(file) {
         const 单价 = 捕获商品单价表[商品代号];
         const 数量 = 捕获商品数量表[商品代号];
         const 小计 = 单价 * 数量;
-        const 大类 = 商品大类解析(商品代号);
+        const 大类 = 商品类型解析(商品代号);
         return { 商品代号, 大类, 单价, 数量, 小计 };
       });
       const 导出扩展商品销售统计表列 = sortBy(
@@ -512,13 +514,31 @@ async function xlsxDownloadWithStyle(
   download(wbout, `${name}.xlsx`);
 }
 
-function 商品大类解析(商品: string) {
+function 由前置字符对商品大类解析(商品: string) {
   if (商品?.match?.(/^[a#]/)) return "肉类";
   if (商品?.match?.(/^[$%]/)) return "蔬菜水果";
   return "百货";
 }
 function 商品类型解析(商品: string) {
-  return 商品大类解析(商品);
+  // 精确匹配
+  const 精确匹配 = 商品类型表[商品]; /* 应该不全 */
+  if (精确匹配) return 精确匹配;
+
+  const pair = Object.entries(商品类型表).find(([k, v]) => {
+    if (k.match(商品) || 商品.match(k)) return true;
+    return false;
+  });
+  if (pair) return pair[1];
+
+  // 模糊匹配
+  // const 模糊匹配结果 = fuzzy.match('asdf', 'asdf')?.rendered
+  // Object.keys(商品) = fuzzy.match('asdf', 'asdf').rendered
+  // const 模糊匹配 = [商品]; /* 应该不全 */
+  // if (精确匹配) return 精确匹配;
+
+  const 前置字符解析结果 = 由前置字符对商品大类解析(商品); /* 前置字符会变 */
+  if (前置字符解析结果) return 前置字符解析结果;
+
   // return Object.entries(商品类型正则表)
   //   .map(([类型, 模式]) => ({ 类型, 模式 }))
   //   .filter((e) => 商品.match(e.类型) || (e.模式 && 商品.match(e.模式)))
