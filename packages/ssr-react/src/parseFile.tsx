@@ -525,7 +525,9 @@ function 商品类型解析(商品: string) {
   if (精确匹配) return 精确匹配;
 
   const pair = Object.entries(商品类型表).find(([k, v]) => {
-    if (k.match(商品) || 商品.match(k)) return true;
+    try {
+      if (k.match(商品) || 商品.match(k)) return true;
+    } catch (e) {}
     return false;
   });
   if (pair) return pair[1];
