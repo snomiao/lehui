@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.9.1](https://github.com/snomiao/lehui/compare/lehui@0.9.0...lehui@0.9.1) (2022-05-03)
+
+
+### Bug Fixes
+
+* name ([810ea31](https://github.com/snomiao/lehui/commit/810ea3164288efe22139c7a421730a9db5047001))
+* use try match ([a445099](https://github.com/snomiao/lehui/commit/a4450996fcc483b3597819344b0e2a5d3b689d82))
+
+
+
+
+
 # [0.9.0](https://github.com/snomiao/lehui/compare/lehui@0.8.0...lehui@0.9.0) (2022-05-01)
 
 
