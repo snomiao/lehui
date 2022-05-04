@@ -9,6 +9,7 @@
     "build": "lerna run build",
     "format": "prettier -w . && eslint --fix .",
     "lerna-publish": "lerna publish",
+    "start": "cd packages/ssr-react",
     "test": "lerna run test",
     "postversion": "cp -r ./packages/ssr-react/media ./packages/ssr-react/*.md ./"
   },

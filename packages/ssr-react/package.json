@@ -15,7 +15,7 @@
     "generate": "vite build --outDir dist/static && npm run build:server && node prerender",
     "serve": "cross-env NODE_ENV=production node server",
     "serve-dev": "serve dist/client -l tcp://0.0.0.0:65535",
-    "start": "vite"
+    "start": "serve dist/client"
   },
   "dependencies": {
     "@tensorflow/tfjs": "^3.16.0",
