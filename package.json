@@ -10,7 +10,7 @@
     "deploy:heroku": "heroku git:remote -a lehui && git push heroku",
     "format": "prettier -w . && eslint --fix .",
     "lerna-publish": "lerna publish",
-    "start": "cd packages/ssr-react",
+    "start": "cd packages/ssr-react && npm run start",
     "test": "lerna run test",
     "postversion": "cp -r ./packages/ssr-react/media ./packages/ssr-react/*.md ./"
   },
