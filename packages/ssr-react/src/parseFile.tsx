@@ -99,7 +99,7 @@ export function ParseFileReRender({ latestFiles }: any) {
 
       {parseResults.map(({ 导出时间, 汇总 }) => (
         <div key={导出时间}>
-          <span>原导出时间：{导出时间}</span>
+          {导出时间 && <span>原导出时间：{导出时间}</span>}
           <JSONViewer json={汇总} />
         </div>
       ))}
@@ -122,10 +122,11 @@ export function parseFile(file) {
 
       // const splitCSV
       const lines = csv.split("\n");
-      const 导出时间 = lines
-        .find((e) => e.match("导出时间"))
-        .replace(/导出时间[：:]/, "")
-        .replace(/,/g, "");
+      const 导出时间 =
+        lines
+          ?.find((e) => e.match("导出时间"))
+          ?.replace?.(/导出时间[：:]/, "")
+          ?.replace?.(/,/g, "") || "未提供导出时间";
       // .match(/导出时间[:：]\s*?(.*?)-(.*?)/);
       console.log(导出时间);
 
