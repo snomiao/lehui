@@ -15,11 +15,13 @@
     "generate": "vite build --outDir dist/static && npm run build:server && node prerender",
     "serve": "cross-env NODE_ENV=production node server",
     "serve-dev": "serve dist/client -l tcp://0.0.0.0:65535",
-    "start": "serve dist/client"
+    "start": "npm run dev"
   },
   "dependencies": {
     "@tensorflow/tfjs": "^3.16.0",
+    "@types/d3": "^7.1.0",
     "@types/lodash-es": "^4.17.6",
+    "@types/react": "^18.0.9",
     "cookie-parser": "^1.4.6",
     "d3": "^7.4.4",
     "dotenv": "^16.0.0",

@@ -106,6 +106,7 @@ export function ParseFileReRender({ latestFiles }: any) {
     </>
   );
 }
+
 export function parseFile(file) {
   return new Promise((resolve) => {
     //ref: https://www.w3.org/TR/file-upload/#dfn-filereader
@@ -157,8 +158,10 @@ export function parseFile(file) {
         ],
         ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
       );
-      const 捕获商品单价表 = {};
-      const 捕获商品数量表 = {};
+      const 捕获商品表: Record<
+        string,
+        { 商品名: string; 商品代号: string; 商品单价: number; 购买数量: number }
+      > = {};
       // "商品单价（元）"
       const 归并订单表列 = 未合并订单表列
         .reduce((订单表列, 订单行) => {
@@ -176,20 +179,24 @@ export function parseFile(file) {
             ["订单金额（元）"]: 订单金额,
             顾客备注,
           } = 订单行;
-          const { 商品, ["商品单价（元）"]: 商品单价串, 购买数量: 购买数量串 } = 订单行;
+          const { 商品: 商品代号, ["商品单价（元）"]: 商品单价串, 购买数量: 购买数量串 } = 订单行;
           const 商品单价 = Number(商品单价串);
           const 购买数量 = Number(购买数量串);
+          const 商品名 = 显示商品名处理(商品代号);
           const 商品列 = [
             {
-              类型: 商品类型解析(商品),
-              商品名: 显示商品名处理(商品),
-              商品代号: 商品,
+              类型: 商品类型解析(商品代号),
+              商品名: 商品名,
+              商品代号: 商品代号,
               商品单价,
               购买数量,
             },
           ];
-          捕获商品单价表[商品] = 商品单价;
-          捕获商品数量表[商品] = (捕获商品数量表[商品] || 0) + 购买数量;
+          if (!商品代号) throw new Error("商品没有代号");
+          const 商品统计id = 商品代号 + 商品单价;
+          if (!捕获商品表[商品统计id])
+            捕获商品表[商品统计id] = { 商品单价, 购买数量: 0, 商品代号, 商品名 };
+          捕获商品表[商品统计id].购买数量 += 购买数量;
           if (!订单编号) {
             const 最近订单 = 订单表列[订单表列.length - 1];
             最近订单.商品列.push(...商品列);
@@ -323,16 +330,17 @@ export function parseFile(file) {
       ];
 
       // SKU 情况统计
-      const 扩展商品销售统计表列 = Object.keys(捕获商品单价表).map((商品代号) => {
-        const 单价 = 捕获商品单价表[商品代号];
-        const 数量 = 捕获商品数量表[商品代号];
+      const 扩展商品销售统计表列 = Object.values(捕获商品表).map((捕获商品) => {
+        const { 商品代号, 商品单价, 商品名, 购买数量 } = 捕获商品;
+        const 单价 = 商品单价;
+        const 数量 = 购买数量;
         const 小计 = 单价 * 数量;
         const 大类 = 商品类型解析(商品代号);
-        return { 商品代号, 大类, 单价, 数量, 小计 };
+        return { 商品代号, 商品名, 大类, 单价, 数量, 小计 };
       });
       const 导出扩展商品销售统计表列 = sortBy(
-        扩展商品销售统计表列.map(({ 商品代号, 单价, 数量, 小计, 大类 }) => {
-          const 商品名 = 显示商品名处理(商品代号);
+        扩展商品销售统计表列.map(({ 商品代号, 商品名, 单价, 数量, 小计, 大类 }) => {
+          // const 商品名 = 显示商品名处理(商品代号);
           return { 商品名, 单价, 数量, 小计, 大类 };
         }),
       );
@@ -348,15 +356,39 @@ export function parseFile(file) {
           { 数量: 0, 金额: 0 },
         ),
       );
+      const 商品销售统计汇总汇总表 = Object.entries(商品销售统计汇总表表)
+        .map(([k, v]) => ({ 分类: k, ...v }))
+        .reduce(
+          (汇总, 条目) => {
+            const 金额 = 汇总.金额 + 条目.金额;
+            const 数量 = 汇总.数量 + 条目.数量;
+            return { 金额, 数量 };
+          },
+          { 数量: 0, 金额: 0 },
+        );
       const 商品销售统计汇总列列 = Object.entries(商品销售统计汇总表表).flatMap(
         ([类型, { 数量, 金额 }]) => [
           [`${类型}数量`, 数量],
           [`${类型}金额`, 金额],
-          [`${类型}单品均价`, 金额 / 数量],
+          [`${类型}均价`, 金额 / 数量],
         ],
       );
+      // 汇总	数值
+      // "订单总量"	"214"
+      // "订单总金额"	"35916.46"
+      // "订单商品总量"	"1874"
+
+      const 汇总表 = Object.fromEntries(汇总表列.map((e) => [e.汇总, Number(e.数值)])) as {
+        订单总量: number;
+        订单总金额: number;
+        订单商品总量: number;
+      };
+      const 包装费 = 1;
       const 增强汇总表列 = 汇总表列.concat(
         商品销售统计汇总列列.map(([k, v]) => ({ 汇总: k, 数值: v })),
+        [{ 汇总: "汇总商品数量", 数值: 商品销售统计汇总汇总表.数量 }],
+        [{ 汇总: "汇总商品金额", 数值: 商品销售统计汇总汇总表.金额 }],
+        [{ 汇总: "核对订单总金额", 数值: 商品销售统计汇总汇总表.金额 + 汇总表.订单总量 * 包装费 }],
       );
       globalThis.解析结果 = {
         导出时间,
@@ -380,7 +412,7 @@ function 按识别小区比较(): (a: any, b: any) => number {
 }
 
 function 显示商品名处理(商品: any) {
-  return 商品.replace(/^[a]/, "");
+  return 商品.replace(/^[a%#]/, "");
 }
 
 function 地址小区解析(地址: string) {
@@ -406,7 +438,8 @@ function 子表列提取<H extends string>(lines: string[], 表头: H[], 表尾:
   const startIndex = lines.findIndex((e) => e.startsWith(表头.join(",")));
   const subLines = lines.slice(startIndex);
   const endIndex = subLines.findIndex((e) => e.startsWith(表尾.join(",")));
-  const csvContent = subLines.slice(0, endIndex).join("\n");
+  const cuttedSubline = endIndex !== -1 ? subLines.slice(0, endIndex) : subLines;
+  const csvContent = cuttedSubline.join("\n");
   const 表列 = d3.csvParse(csvContent).map(({ [""]: empty, ...e }) => ({ ...e }));
   return 表列 as { [k in H]: any }[];
 }
@@ -453,7 +486,7 @@ function 订单列列XLSX下载(name: string, aoa: any[][]) {
         font: { sz: sizingLehui ? 24 : sizingNumber ? 36 : 12, bold: true, underline: true },
       };
       cell.s = style;
-      console.log(cell, sheetToModify[XLSX.utils.encode_cell({ r, c: c })]);
+      // console.log(cell, sheetToModify[XLSX.utils.encode_cell({ r, c: c })]);
 
       // // 单元格对齐方式
       // alignment: {
@@ -559,10 +592,10 @@ function download(content: string, filename: string) {
   // 然后移除
   document.body.removeChild(eleLink);
 }
-function sheetFitToColumn(sheet) {
-  const aoj = d3.csvParseRow(XLSX.utils.sheet_to_csv(sheet));
-  // TODO check this
-}
+// function sheetFitToColumn(sheet) {
+//   const aoj = d3.csvParseRow(XLSX.utils.sheet_to_csv(sheet));
+//   // TODO check this
+// }
 function fitToColumn(arrayOfArray) {
   // get maximum character of each column
   return arrayOfArray[0].map((cell, i) => ({
