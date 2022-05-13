@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.10.0](https://github.com/snomiao/lehui/compare/lehui@0.9.3...lehui@0.10.0) (2022-05-11)
+
+
+### Features
+
+* slice(0, -1) and 核对订单总金额 and 捕获商品表于不同价格 ([3dcf64a](https://github.com/snomiao/lehui/commit/3dcf64a728569e49e8c104b459d012f886a2fe81))
+
+
+
+
+
 ## [0.9.3](https://github.com/snomiao/lehui/compare/lehui@0.9.2...lehui@0.9.3) (2022-05-10)
 
 
